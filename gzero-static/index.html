@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e8f0ff" />
+    <meta name="description" content="A zero-dependency HTML, CSS, and JavaScript deployment dashboard." />
+    <title>Baseline — HTML, CSS &amp; JS</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="logo"><span class="logo-box"><i></i><i></i></span><strong>Baseline</strong><span class="version">v2.4</span></div>
+        <div class="project-switcher"><span class="project-mark">P</span><div><small>Current project</small><b>Platform API</b></div><button aria-label="Switch project">⌄</button></div>
+        <nav>
+          <span class="nav-label">Monitor</span>
+          <a class="active" href="#overview"><i>⌂</i>Overview</a>
+          <a href="#services"><i>◇</i>Services <em>8</em></a>
+          <a href="#incidents"><i>!</i>Incidents <em class="alert-count">2</em></a>
+          <a href="#logs"><i>≡</i>Logs</a>
+          <span class="nav-label">Configure</span>
+          <a href="#team"><i>♙</i>Team</a>
+          <a href="#settings"><i>⚙</i>Settings</a>
+        </nav>
+        <div class="status-card"><div><span></span><b>All systems operational</b></div><small>Last checked <time id="side-time">just now</time></small><button id="status-button">View status page ↗</button></div>
+        <div class="user"><span>TS</span><div><b>Taylor Smith</b><small>Admin</small></div><button>•••</button></div>
+      </aside>
+
+      <div class="page">
+        <header>
+          <button class="menu" id="menu" aria-label="Open menu">☰</button>
+          <div class="breadcrumbs"><span>Projects</span><i>/</i><b>Platform API</b></div>
+          <div class="header-right"><button class="command" id="command"><span>⌕</span> Quick search <kbd>⌘ K</kbd></button><button class="header-icon" id="notification" aria-label="Notifications">♢<i></i></button><div class="tiny-avatar">TS</div></div>
+        </header>
+
+        <main id="overview">
+          <section class="welcome"><div><div class="environment"><i></i> Production environment</div><h1>Infrastructure overview</h1><p>A real-time look at your services, traffic, and system health.</p></div><div class="welcome-actions"><button class="secondary" id="refresh">↻ Refresh</button><button class="primary" id="create">+ Create service</button></div></section>
+
+          <section class="kpis" aria-label="System statistics">
+            <article><div class="kpi-label"><span>Requests today</span><i class="blue">↗</i></div><strong>1,928,440</strong><div class="kpi-foot"><b>↑ 14.6%</b><span>vs. yesterday</span></div></article>
+            <article><div class="kpi-label"><span>Active services</span><i class="purple">◇</i></div><strong>08 <small>/ 08</small></strong><div class="kpi-foot"><b>● Healthy</b><span>across 3 regions</span></div></article>
+            <article><div class="kpi-label"><span>p95 latency</span><i class="green">⌁</i></div><strong>84<small>ms</small></strong><div class="kpi-foot"><b>↓ 11.2%</b><span>faster this week</span></div></article>
+            <article><div class="kpi-label"><span>Error rate</span><i class="orange">!</i></div><strong>0.06<small>%</small></strong><div class="kpi-foot warning"><b>↑ 0.02%</b><span>within threshold</span></div></article>
+          </section>
+
+          <section class="dashboard-grid">
+            <article class="panel traffic-panel">
+              <div class="panel-title"><div><h2>Traffic &amp; latency</h2><p>Requests per minute across all services</p></div><div class="period" role="group" aria-label="Chart range"><button data-range="1H">1H</button><button class="active" data-range="24H">24H</button><button data-range="7D">7D</button></div></div>
+              <div class="chart-summary"><div><span>Requests</span><b id="request-total">1.92M</b></div><div><span>Avg. latency</span><b id="latency-total">62 ms</b></div><span class="chart-status"><i></i> Live</span></div>
+              <div class="chart"><div class="chart-labels"><span>40K</span><span>30K</span><span>20K</span><span>10K</span><span>0</span></div><svg viewBox="0 0 700 210" preserveAspectRatio="none" aria-label="Traffic chart"><defs><linearGradient id="blueArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3979ff" stop-opacity=".28"/><stop offset="1" stop-color="#3979ff" stop-opacity="0"/></linearGradient></defs><path id="area-line" d="M0 179 C30 164 48 175 79 154 S130 147 159 128 S208 138 240 112 S295 94 320 108 S375 72 405 83 S451 72 483 53 S536 66 565 39 S620 46 651 23 S680 17 700 11 V210 H0 Z" fill="url(#blueArea)"/><path id="traffic-line" d="M0 179 C30 164 48 175 79 154 S130 147 159 128 S208 138 240 112 S295 94 320 108 S375 72 405 83 S451 72 483 53 S536 66 565 39 S620 46 651 23 S680 17 700 11" fill="none" stroke="#3979ff" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="M0 194 C80 188 130 196 195 187 S310 190 377 175 S479 185 548 172 S644 176 700 164" fill="none" stroke="#8b62d4" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/></svg><div class="chart-dates"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span></div></div>
+            </article>
+
+            <article class="panel regions">
+              <div class="panel-title"><div><h2>Regional load</h2><p>Request distribution</p></div><button class="dots">•••</button></div>
+              <div class="globe"><div class="orbit one"></div><div class="orbit two"></div><span class="continent c1"></span><span class="continent c2"></span><span class="continent c3"></span><i class="pin p1"></i><i class="pin p2"></i><i class="pin p3"></i></div>
+              <div class="region-row"><i class="us"></i><div><b>us-west-2</b><small>Oregon</small></div><span class="load"><i style="width:78%"></i></span><strong>48%</strong></div>
+              <div class="region-row"><i class="eu"></i><div><b>eu-central-1</b><small>Frankfurt</small></div><span class="load"><i style="width:48%"></i></span><strong>31%</strong></div>
+              <div class="region-row"><i class="ap"></i><div><b>ap-southeast-1</b><small>Singapore</small></div><span class="load"><i style="width:34%"></i></span><strong>21%</strong></div>
+            </article>
+          </section>
+
+          <section class="panel services" id="services">
+            <div class="panel-title"><div><h2>Service health</h2><p>Live status of your production services</p></div><button id="manage">Manage services →</button></div>
+            <div class="table-scroll"><table><thead><tr><th>Service</th><th>Status</th><th>Region</th><th>Requests</th><th>p95 latency</th><th>Deploy</th></tr></thead><tbody>
+              <tr><td><span class="service-icon api">AP</span><div><b>public-api</b><small>Node.js · 4 instances</small></div></td><td><span class="operational"><i></i>Operational</span></td><td>us-west-2</td><td>824.2K</td><td><b class="latency good">42 ms</b></td><td><code>a4c82f1</code></td></tr>
+              <tr><td><span class="service-icon worker">WK</span><div><b>event-worker</b><small>Go · 6 instances</small></div></td><td><span class="operational"><i></i>Operational</span></td><td>eu-central-1</td><td>518.9K</td><td><b class="latency good">68 ms</b></td><td><code>39bd1e7</code></td></tr>
+              <tr><td><span class="service-icon auth">AU</span><div><b>auth-service</b><small>Rust · 3 instances</small></div></td><td><span class="degraded"><i></i>Degraded</span></td><td>ap-southeast-1</td><td>382.1K</td><td><b class="latency warn">126 ms</b></td><td><code>e12f88a</code></td></tr>
+              <tr><td><span class="service-icon db">DB</span><div><b>primary-db</b><small>PostgreSQL · HA</small></div></td><td><span class="operational"><i></i>Operational</span></td><td>us-west-2</td><td>203.2K</td><td><b class="latency good">18 ms</b></td><td><code>v15.4.2</code></td></tr>
+            </tbody></table></div>
+          </section>
+
+          <footer><span>Baseline static dashboard</span><div><i></i> Client-side JavaScript active <span id="client-time"></span></div></footer>
+        </main>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="search-modal" id="search-modal" aria-hidden="true"><div><label><span>⌕</span><input id="search-input" type="search" placeholder="Search services, logs, and settings…" /></label><p>Press <kbd>Esc</kbd> to close</p></div></div>
+  </body>
+</html>

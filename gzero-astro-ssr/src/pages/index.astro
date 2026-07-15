@@ -1,0 +1,167 @@
+---
+const renderedAt = new Date();
+const requestId = crypto.randomUUID().slice(0, 8).toUpperCase();
+const host = Astro.request.headers.get('host') ?? 'local';
+const deployments = [
+  { name: 'web-checkout', env: 'Production', branch: 'main', time: '2m 14s', status: 'Ready', color: '#a8ff78' },
+  { name: 'docs-portal', env: 'Production', branch: 'release/docs', time: '1m 48s', status: 'Ready', color: '#a8ff78' },
+  { name: 'billing-api', env: 'Preview', branch: 'feat/invoices', time: '0m 37s', status: 'Building', color: '#ffcc66' },
+  { name: 'admin-console', env: 'Preview', branch: 'fix/search', time: '3m 02s', status: 'Ready', color: '#a8ff78' },
+];
+const activity = [
+  ['Production deployed', 'web-checkout · main', '2 min ago'],
+  ['Build cache restored', 'billing-api · 284 MB', '8 min ago'],
+  ['Domain verified', 'status.acme.dev', '21 min ago'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#0a0c10" />
+    <meta name="description" content="Orbit deployment control dashboard built with Astro SSR." />
+    <title>Orbit Control — Astro SSR</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+      :root { color-scheme: dark; font-family: Manrope, system-ui, sans-serif; color: #f4f6f8; background: #090b0f; font-synthesis: none; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; background: radial-gradient(circle at 76% -10%, #1c2940 0, transparent 28rem), #090b0f; }
+      button { font: inherit; }
+      .shell { min-height: 100vh; display: grid; grid-template-columns: 232px 1fr; }
+      aside { border-right: 1px solid #242830; padding: 28px 18px; display: flex; flex-direction: column; background: rgb(9 11 15 / .82); backdrop-filter: blur(20px); }
+      .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 30px; font-weight: 700; letter-spacing: -.03em; }
+      .mark { width: 31px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid #596170; border-radius: 10px; background: linear-gradient(145deg, #272c35, #11141a); box-shadow: inset 0 0 0 4px #12151b; }
+      .mark::after { content: ''; width: 8px; aspect-ratio: 1; border-radius: 50%; background: #a8ff78; box-shadow: 0 0 14px #a8ff78; }
+      .eyebrow { color: #777e8a; font: 500 10px DM Mono, monospace; letter-spacing: .16em; text-transform: uppercase; padding: 13px 10px 8px; }
+      nav { display: grid; gap: 4px; }
+      .nav-item { color: #8b929d; border: 0; background: transparent; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; cursor: pointer; text-align: left; font-size: 13px; }
+      .nav-item:hover, .nav-item.active { color: #f6f7f9; background: #181b21; }
+      .nav-item.active { box-shadow: inset 2px 0 #a8ff78; }
+      .nav-item svg { width: 16px; height: 16px; }
+      .side-bottom { margin-top: auto; }
+      .team { padding: 12px; border: 1px solid #272b33; border-radius: 12px; background: #11141a; }
+      .team-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+      .bar { height: 4px; background: #242831; border-radius: 4px; margin: 13px 0 8px; overflow: hidden; }
+      .bar span { display: block; width: 68%; height: 100%; background: #a8ff78; border-radius: inherit; }
+      .muted { color: #777e8a; }
+      main { padding: 0 36px 40px; overflow: hidden; }
+      header { height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #242830; }
+      .breadcrumb { color: #777e8a; font-size: 13px; }
+      .breadcrumb b { color: #e8eaed; font-weight: 500; }
+      .header-actions { display: flex; gap: 10px; align-items: center; }
+      .icon-btn, .avatar { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #2a2f38; color: #a1a7b1; background: #11141a; border-radius: 9px; }
+      .avatar { background: #d9b7ff; color: #251933; font: 700 12px DM Mono; border: 0; }
+      .title-row { display: flex; justify-content: space-between; gap: 24px; align-items: end; padding: 38px 0 24px; }
+      h1 { margin: 0 0 6px; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.05em; }
+      .subtitle { color: #858c97; margin: 0; font-size: 14px; }
+      .primary { border: 0; border-radius: 9px; padding: 11px 16px; color: #102006; background: #a8ff78; font-weight: 700; cursor: pointer; box-shadow: 0 7px 30px rgb(168 255 120 / .14); }
+      .primary:hover { filter: brightness(1.08); }
+      .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .card { border: 1px solid #282c34; border-radius: 14px; background: linear-gradient(145deg, rgb(23 26 32 / .88), rgb(14 16 21 / .9)); }
+      .metric { padding: 19px; min-height: 135px; position: relative; overflow: hidden; }
+      .metric::after { content: ''; position: absolute; width: 90px; height: 90px; right: -35px; bottom: -45px; border: 1px solid #353b46; border-radius: 50%; box-shadow: 0 0 0 17px rgb(40 45 55 / .25); }
+      .metric-label { font-size: 12px; color: #888f9a; }
+      .metric-value { font: 500 30px DM Mono, monospace; margin: 13px 0 7px; letter-spacing: -.06em; }
+      .delta { color: #a8ff78; font: 500 11px DM Mono; }
+      .delta.neutral { color: #8d949f; }
+      .content-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(270px, .8fr); gap: 12px; margin-top: 12px; }
+      .section { padding: 20px; }
+      .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; }
+      h2 { font-size: 14px; margin: 0; letter-spacing: -.02em; }
+      .section-head a { color: #8e959f; font-size: 11px; text-decoration: none; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th { color: #656c77; font: 500 10px DM Mono; text-transform: uppercase; letter-spacing: .08em; text-align: left; padding: 0 10px 11px; }
+      td { border-top: 1px solid #272b32; padding: 15px 10px; color: #959ca6; }
+      td:first-child { color: #f2f3f5; font-weight: 600; }
+      .repo { display: flex; gap: 10px; align-items: center; }
+      .repo-icon { display: grid; place-items: center; width: 28px; aspect-ratio: 1; border: 1px solid #303641; border-radius: 7px; font: 500 10px DM Mono; color: #c8cdd4; }
+      .status { display: inline-flex; gap: 6px; align-items: center; color: #dce0e5; }
+      .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dot); box-shadow: 0 0 8px color-mix(in srgb, var(--dot) 75%, transparent); }
+      .activity { display: grid; gap: 0; }
+      .event { position: relative; padding: 2px 0 23px 25px; border-left: 1px solid #30343d; margin-left: 5px; }
+      .event:last-child { padding-bottom: 6px; }
+      .event::before { content: ''; position: absolute; width: 9px; height: 9px; left: -5px; top: 4px; border-radius: 50%; background: #111419; border: 2px solid #a8ff78; }
+      .event strong { display: block; font-size: 12px; margin-bottom: 5px; }
+      .event small { display: block; color: #747b87; font-size: 10px; line-height: 1.5; }
+      .runtime { margin-top: 12px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 400 10px DM Mono; color: #717985; }
+      .runtime b { color: #a8ff78; font-weight: 500; }
+      @media (max-width: 1000px) { .metrics { grid-template-columns: repeat(2, 1fr); } .content-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 700px) { .shell { display: block; } aside { display: none; } main { padding: 0 18px 28px; } header { height: 65px; } .title-row { padding-top: 28px; } .metrics { grid-template-columns: 1fr 1fr; } .hide-mobile { display: none; } }
+      @media (max-width: 480px) { .metrics { grid-template-columns: 1fr; } .title-row { align-items: start; } .primary { padding: 10px 12px; font-size: 12px; } .metric { min-height: 112px; } .runtime { align-items: flex-start; flex-direction: column; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <div class="brand"><span class="mark"></span> Orbit Control</div>
+        <div class="eyebrow">Workspace</div>
+        <nav>
+          <button class="nav-item active" aria-label="Overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Overview</button>
+          <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg> Deployments</button>
+          <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M3 12h6m6 0h6M12 3v6m0 6v6"/></svg> Domains</button>
+          <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg> Analytics</button>
+        </nav>
+        <div class="eyebrow">Manage</div>
+        <nav>
+          <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg> Settings</button>
+        </nav>
+        <div class="side-bottom">
+          <div class="team">
+            <div class="team-row"><strong>Pro plan</strong><span class="muted">68%</span></div>
+            <div class="bar"><span></span></div>
+            <div class="team-row muted"><small>68 GB bandwidth</small><small>100 GB</small></div>
+          </div>
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div class="breadcrumb">Acme Studio&nbsp; / &nbsp;<b>Overview</b></div>
+          <div class="header-actions"><button class="icon-btn" aria-label="Notifications">⌁</button><div class="avatar">AK</div></div>
+        </header>
+        <div class="title-row">
+          <div><h1>Good afternoon, Alex.</h1><p class="subtitle">Your infrastructure is healthy and running smoothly.</p></div>
+          <button class="primary" id="deployButton">+ New deployment</button>
+        </div>
+        <section class="metrics" aria-label="Key metrics">
+          <article class="card metric"><div class="metric-label">Deployments</div><div class="metric-value">248</div><div class="delta">↗ 12.4% this month</div></article>
+          <article class="card metric"><div class="metric-label">Success rate</div><div class="metric-value">99.8%</div><div class="delta">↗ 0.2% this month</div></article>
+          <article class="card metric"><div class="metric-label">Avg. build time</div><div class="metric-value">1m 42s</div><div class="delta">↓ 18s faster</div></article>
+          <article class="card metric"><div class="metric-label">Bandwidth</div><div class="metric-value">68 GB</div><div class="delta neutral">of 100 GB used</div></article>
+        </section>
+        <div class="content-grid">
+          <section class="card section">
+            <div class="section-head"><h2>Recent deployments</h2><a href="#deployments">View all →</a></div>
+            <div style="overflow-x:auto">
+              <table id="deployments">
+                <thead><tr><th>Project</th><th>Environment</th><th class="hide-mobile">Branch</th><th class="hide-mobile">Duration</th><th>Status</th></tr></thead>
+                <tbody>{deployments.map((item) => <tr><td><div class="repo"><span class="repo-icon">{item.name.slice(0, 2).toUpperCase()}</span>{item.name}</div></td><td>{item.env}</td><td class="hide-mobile">{item.branch}</td><td class="hide-mobile">{item.time}</td><td><span class="status"><span class="dot" style={`--dot:${item.color}`}></span>{item.status}</span></td></tr>)}</tbody>
+              </table>
+            </div>
+          </section>
+          <section class="card section">
+            <div class="section-head"><h2>Activity</h2><a href="#activity">Live feed</a></div>
+            <div class="activity" id="activity">{activity.map(([title, detail, time]) => <div class="event"><strong>{title}</strong><small>{detail}</small><small>{time}</small></div>)}</div>
+          </section>
+        </div>
+        <div class="card runtime"><span><b>● SSR LIVE</b> &nbsp; request {requestId} · host {host}</span><span>Rendered <time id="runtime" datetime={renderedAt.toISOString()}>{renderedAt.toISOString()}</time></span></div>
+      </main>
+    </div>
+    <script>
+      document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach((nav) => nav.classList.remove('active'));
+        item.classList.add('active');
+      }));
+      document.querySelector('#deployButton')?.addEventListener('click', (event) => {
+        const button = event.currentTarget;
+        if (button instanceof HTMLButtonElement) {
+          button.textContent = '✓ Deployment queued';
+          setTimeout(() => button.textContent = '+ New deployment', 2200);
+        }
+      });
+      const runtime = document.querySelector('#runtime');
+      if (runtime instanceof HTMLTimeElement) runtime.textContent = new Date(runtime.dateTime).toLocaleString();
+    </script>
+  </body>
+</html>

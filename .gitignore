@@ -1,0 +1,6 @@
+.agents/
+.codex/
+.DS_Store
+*.log
+yarn-error.log
+

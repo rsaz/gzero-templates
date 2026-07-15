@@ -1,0 +1,13 @@
+{
+  "name": "gzero-templates",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "yarn@1.22.22",
+  "workspaces": [
+    "gzero-*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "typecheck": "yarn workspace northstar-dashboard typecheck && yarn workspace gzero-test-ssr typecheck"
+  }
+}
