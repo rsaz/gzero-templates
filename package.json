@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces run build",
-    "typecheck": "yarn workspace northstar-dashboard typecheck && yarn workspace gzero-test-ssr typecheck"
+    "typecheck": "yarn workspace northstar-dashboard typecheck && yarn workspace gzero-test-ssr typecheck",
+    "validate:apis": "yarn workspace gzero-api-express validate && yarn workspace gzero-api-fastify validate && yarn workspace gzero-api-nestjs validate && yarn workspace gzero-api-koa validate && yarn workspace gzero-api-hono validate"
   }
 }
