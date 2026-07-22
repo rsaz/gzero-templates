@@ -1,6 +1,6 @@
 # GZERO templates
 
-A Yarn 1 monorepo containing standalone frontend and Node.js API templates.
+A monorepo containing standalone frontend, Node.js API, and Python dashboard templates.
 
 | Workspace | Stack | Output |
 | --- | --- | --- |
@@ -10,16 +10,31 @@ A Yarn 1 monorepo containing standalone frontend and Node.js API templates.
 | `gzero-api-koa` | Koa 3 + TypeScript | Node.js API |
 | `gzero-api-nestjs` | NestJS 11 + TypeScript | Node.js API |
 | `gzero-astro-ssr` | Astro + Node adapter | SSR |
+| `gzero-django` | Django 5 (Python) | Server-rendered dashboard |
+| `gzero-fastapi` | FastAPI + Jinja2 (Python) | Server-rendered dashboard + JSON API |
+| `gzero-flask` | Flask 3 + Jinja2 (Python) | Server-rendered dashboard |
 | `gzero-html` | Nuxt | Static generation |
 | `gzero-nuxt` | Nuxt | SSR or static generation |
 | `gzero-static` | HTML, CSS, and JavaScript | Static |
+| `gzero-streamlit` | Streamlit (Python) | Interactive dashboard |
 | `gzero-svelte-ssr` | SvelteKit + Node adapter | SSR |
 | `gzero-test-ssr` | Next.js | SSR |
 | `gzero-vue-vite` | Vue + Vite | Static SPA |
 
-Each workspace keeps its own lockfile and can be installed, developed, and deployed independently. From the repository root, Yarn also recognizes every `gzero-*` directory as a workspace.
+Each template keeps its own dependencies and can be installed, developed, and deployed independently. From the repository root, Yarn recognizes every `gzero-*` directory that has a `package.json` as a workspace; the Python templates stand alone.
 
 Every API template exposes the same single `GET /health` endpoint and includes strict TypeScript, endpoint tests, validated configuration, request IDs, graceful shutdown, a multi-stage Dockerfile, and standalone documentation.
+
+## Python dashboard templates
+
+`gzero-flask`, `gzero-django`, `gzero-fastapi`, and `gzero-streamlit` each render the same revenue-operations dashboard — KPI tiles, a revenue-vs-target chart, an operating-pulse feed, and a searchable pipeline table — from a shared demo dataset. Each ships a `requirements.txt`, a `Dockerfile`, and a `GET /health` endpoint (Streamlit uses its built-in `/_stcore/health`), and listens on port `3000` by default.
+
+```sh
+cd gzero-flask            # or gzero-django, gzero-fastapi, gzero-streamlit
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python app.py             # see each template's README for the exact run command
+```
 
 ## Commands
 

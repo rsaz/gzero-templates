@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FastAPI Revenue Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Revenue operations</p>
+          <h1>FastAPI Revenue Dashboard</h1>
+        </div>
+        <div class="sync-state" aria-live="polite">
+          <span>Updated {{ updated }} UTC</span>
+        </div>
+      </header>
+
+      <section class="metric-grid" aria-label="Key metrics">
+        <article class="metric">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+          <span>Revenue</span>
+          <strong>{{ data.kpis.revenue | compact_currency }}</strong>
+          <small>+12.4% quarter over quarter</small>
+        </article>
+        <article class="metric">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          <span>Pipeline</span>
+          <strong>{{ data.kpis.pipeline | compact_currency }}</strong>
+          <small>3.1x coverage this quarter</small>
+        </article>
+        <article class="metric">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Win rate</span>
+          <strong>{{ data.kpis.winRate }}%</strong>
+          <small>+4.6 points from last month</small>
+        </article>
+        <article class="metric">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4m0 4h.01"/></svg>
+          <span>Churn risk</span>
+          <strong>{{ data.kpis.churnRisk }}%</strong>
+          <small>2 enterprise accounts flagged</small>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="panel revenue-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Performance</p>
+              <h2>Revenue vs target</h2>
+            </div>
+            <div class="legend">
+              <span><i class="legend-actual"></i> Actual</span>
+              <span><i class="legend-target"></i> Target</span>
+            </div>
+          </div>
+
+          <div class="bar-chart" aria-label="Monthly revenue chart">
+            {% for point in data.revenue %}
+            <div class="bar-group">
+              <div class="bar-track">
+                <span class="bar target" style="height: {{ [(point.target / peak * 100), 8] | max }}%"></span>
+                <span class="bar actual" style="height: {{ [(point.revenue / peak * 100), 8] | max }}%"></span>
+              </div>
+              <span class="bar-label">{{ point.month }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <aside class="panel activity-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Signals</p>
+              <h2>Operating pulse</h2>
+            </div>
+          </div>
+          <div class="activity-list">
+            {% for item in data.activities %}
+            <div class="activity-item">
+              <span class="trend-dot trend-{{ item.trend }}"></span>
+              <div>
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.value }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="panel-heading table-heading">
+          <div>
+            <p class="eyebrow">Pipeline</p>
+            <h2>Active opportunities</h2>
+          </div>
+          <label class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="deal-search" type="search" placeholder="Search deals" />
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Owner</th>
+                <th>Stage</th>
+                <th>Value</th>
+                <th>Probability</th>
+                <th>Close</th>
+                <th>Health</th>
+              </tr>
+            </thead>
+            <tbody id="deal-rows">
+              {% for deal in data.deals %}
+              <tr>
+                <td>
+                  <div class="account-cell">
+                    <strong>{{ deal.account }}</strong>
+                    <span>{{ deal.region }}</span>
+                  </div>
+                </td>
+                <td>{{ deal.owner }}</td>
+                <td><span class="badge stage-{{ deal.stage | lower }}">{{ deal.stage }}</span></td>
+                <td>{{ deal.value | currency }}</td>
+                <td>{{ deal.probability }}%</td>
+                <td>{{ deal.closeDate | short_date }}</td>
+                <td><span class="health {{ deal.health | slug }}">{{ deal.health }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const search = document.getElementById("deal-search");
+      const rows = Array.from(document.querySelectorAll("#deal-rows tr"));
+      search.addEventListener("input", () => {
+        const q = search.value.trim().toLowerCase();
+        for (const row of rows) {
+          row.classList.toggle("is-hidden", q !== "" && !row.textContent.toLowerCase().includes(q));
+        }
+      });
+    </script>
+  </body>
+</html>
