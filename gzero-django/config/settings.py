@@ -1,7 +1,9 @@
 """Django settings for the GZERO dashboard template.
 
-Deliberately minimal: no database models are used, so the stock SQLite
-configuration is left in place only to satisfy Django's checks.
+Includes the Django admin (at /admin/) as a full deployment exercise: run the
+platform's release command (`python manage.py migrate --noinput`), set the
+DJANGO_SUPERUSER_USERNAME/EMAIL/PASSWORD env vars, then create the account with
+a one-off command: `python manage.py createsuperuser --noinput`.
 """
 
 from __future__ import annotations
@@ -16,6 +18,11 @@ DEBUG = os.environ.get("DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
     "dashboard",
 ]
@@ -23,7 +30,20 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+]
+
+# Behind the platform's HTTPS proxy: trust X-Forwarded-Proto so Django knows
+# the request is secure, and trust the public origin for CSRF (admin login).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -33,7 +53,13 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": []},
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
     },
 ]
 
